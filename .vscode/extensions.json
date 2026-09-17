@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "pioarduino.pioarduino-ide",
+        "platformio.platformio-ide",
+        "svelte.svelte-vscode"
+    ],
+    "unwantedRecommendations": [
+        "ms-vscode.cpptools-extension-pack"
+    ]
+}
