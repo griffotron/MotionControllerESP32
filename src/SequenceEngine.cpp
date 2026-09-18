@@ -189,16 +189,13 @@ void SequenceEngine::sequenceCallback(void* arg) {
         if (now - mgr.lastStepMillis < hold) return;
     }
 
-
-    // Advance and execute, chaining straight through zero-hold cues so a burst
-    // of cues (e.g. a full horizontal line) lands in one tick instead of one
-    // pixel per tick. Capped at one full pass to avoid spinning forever on an
-    // all-zero-hold looping sequence.
+    // Advance and execute, chaining straight through zero-hold cues so a burst of cues (e.g. a full horizontal line) lands in one tick instead of one
+    // pixel per tick. Capped at one full pass to avoid spinning forever on an all-zero-hold looping sequence.
     for (std::size_t executed = 0; executed < mgr.totalSteps; executed++) {
         std::size_t next = mgr.currentIndex + 1;
         if (next >= mgr.totalSteps) {
             if (!mgr.loop) {
-                mgr.paused = true;   // latch: every future tick exits at the top
+                mgr.paused = true;   // every future tick exits at the top
                 ctx->instance->_statusChanged = true;   // sequence finished
                 return;
             }
@@ -206,9 +203,6 @@ void SequenceEngine::sequenceCallback(void* arg) {
         }
         mgr.currentIndex = next;
         mgr.lastStepMillis = now;
-
-        // MotionCue& cue = mgr.sequence.playlist[next];
-        // ctx->instance->_can.write(cue.moduleId, cue.data);
 
         MotionCue& cue = mgr.sequence.playlist[mgr.currentIndex];
         ctx->instance->_can.write(cue.moduleId, cue.data);
@@ -218,74 +212,7 @@ void SequenceEngine::sequenceCallback(void* arg) {
         if (cue.holdTimeMs != 0){
             return;
         }
-    }
-
-
-/*
-
-    TimerContext* ctx = (TimerContext*)arg;
-
-   MutexGuard guard(ctx->instance->_mutex, 0); // this MutexGuard will automatically release 
-    if (!guard.locked()){
-        return;
-    }
-
-    if(ctx->sequenceMgr.paused){
-        return;
-    }
-        
-    if(ctx->sequenceMgr.totalSteps == 0){
-        ctx->sequenceMgr.playing = false;
-        return;
-    }
-
-    uint32_t now = millis();
-
-    // Check if we need to move to the first step or if the current hold time expired
-    bool timeForNextStep = (ctx->sequenceMgr.currentIndex == -1) || 
-                           (now - ctx->sequenceMgr.lastStepMillis >= ctx->sequenceMgr.sequence.playlist[ctx->sequenceMgr.currentIndex].holdTimeMs);
-
-    if (!timeForNextStep){
-        return;
-    }
-
-    // Increment index and loop back to 0 if we hit the end
-    if(ctx->sequenceMgr.loop){
-        ctx->sequenceMgr.currentIndex = (ctx->sequenceMgr.currentIndex + 1) % ctx->sequenceMgr.totalSteps;
-    }
-    else{
-        ctx->sequenceMgr.currentIndex = (ctx->sequenceMgr.currentIndex + 1);
-        if(ctx->sequenceMgr.currentIndex >= ctx->sequenceMgr.totalSteps)
-        {
-            ctx->sequenceMgr.playing = false;
-            return;
-        }
-    }
-    ctx->sequenceMgr.lastStepMillis = now;
-
-    // Execute the "Action"
-    ctx->sequenceMgr.playing = true;
-
-    while(ctx->sequenceMgr.currentIndex < ctx->sequenceMgr.totalSteps){
-        MotionCue current = ctx->sequenceMgr.sequence.playlist[ctx->sequenceMgr.currentIndex];
-        ctx->instance->_can.write(current.moduleId, current.data);
-
-        DEBUG_PRINTF("[STEP %d] ModuleId: %d | Holding for: %u ms | NodeId: %u \n", ctx->sequenceMgr.currentIndex, current.moduleId, current.holdTimeMs, current.data[2]);
-        
-        // check if we should hold here or jump straight to the next motion cue.
-        // Previously I was processing one motion queue per run of sequenceCallback with the timer set to 10ms. But that does introduce some latency
-        // of 10ms between motion queues which makes the display look a bit slow to update, especially if doing something like
-        // showing a whole horizontal line at once where you see each pixel lag behind the next slightly
-        // So now, if there's no hold time we just jump straight to processing the next one, and I've been able to increase the timer to 50ms (20fps)
-        if(current.holdTimeMs != 0 || ctx->sequenceMgr.currentIndex + 1 >= ctx->sequenceMgr.totalSteps){
-            break;
-        }
-        else{
-            ctx->sequenceMgr.currentIndex = (ctx->sequenceMgr.currentIndex + 1);
-        }
-    }
-*/
-    
+    } 
 
 }
 
